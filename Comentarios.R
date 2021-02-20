@@ -13,7 +13,7 @@ require(tibble)
 require(stringr)
 require(tidyr)
 
-################# links ############
+#################---links---############
 
 vector_links <- c("https://www.lacapitalmdp.com/luis-brandoni-esta-internado-con-coronavirus/",
                   "https://www.lacapitalmdp.com/despues-de-once-meses-los-alumnos-volvieron-a-las-escuelas/",
