@@ -32,7 +32,7 @@ links_comentarios_fb <- str_remove_all(links_comentarios_fb,"/")
 links_coment_lc <- paste0("https://www.facebook.com/v2.5/plugins/comments.php?app_id=551960851645342&channel=https%3A%2F%2Fstaticxx.facebook.com%2Fx%2Fconnect%2Fxd_arbiter%2F%3Fversion%3D46%23cb%3Df30998e135adef4%26domain%3Dwww.lacapitalmdp.com%26origin%3Dhttps%253A%252F%252Fwww.lacapitalmdp.com%252Ff171cd682eab44%26relation%3Dparent.parent&container_width=1203&height=100&href=https%3A%2F%2Fwww.lacapitalmdp.com%2F",links_comentarios_fb,"%2F&locale=es_LA&numposts=100&sdk=joey&version=v2.5&width=")
 
 # Usamos RSelenium
-rd <- rsDriver(browser = "firefox", port = 1234L)
+rd <- rsDriver(browser = "firefox", port = 5432L)
 ffd <- rd$client
 
 # creamos la funcion
@@ -40,10 +40,6 @@ leer_fb <- function (x){
   tryCatch({
     ffd$navigate(x)
     Sys.sleep(2)
-    ffd$findElement("class name", "_2pir")$clickElement()
-    ffd$findElement("class name", "_2pir")$clickElement()
-    ffd$findElement("class name", "_2pir")$clickElement()
-    ffd$findElement("class name", "_2pir")$clickElement()
     fb <-  ffd$getPageSource()[[1]] %>% read_html()
     tibble(
       fecha = html_nodes(fb, ".UFISutroCommentTimestamp.livetimestamp") %>% html_text(),
