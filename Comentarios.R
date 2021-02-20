@@ -75,5 +75,3 @@ comentarios_fb_limpios <- comentarios_fb %>%
 
 # guardamos los comentarios normalizados
 saveRDS(comentarios_fb_limpios,"comentarios_fb_limpios.rds")
-
-##fin
