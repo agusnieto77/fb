@@ -65,7 +65,7 @@ leer_fb <- function (x){
 comentarios_fb <- map_df(links_coment_lc, leer_fb)
 
 # guardamos los comentarios
-saveRDS("comentarios_fb.rds")
+saveRDS(comentarios_fb,"comentarios_fb.rds")
 
 ############### limpiamos y normalizamos los datos
 # limpiamos
