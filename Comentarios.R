@@ -31,7 +31,7 @@ link_parte_3 <- "%2F&locale=es_LA&numposts=100&sdk=joey&version=v2.5&width="
 links_coment_lc <- paste0(link_parte_1, links_comentarios_fb, link_parte_3)
 
 # Usamos RSelenium
-rd <- rsDriver(browser = "firefox", port = 2288L)
+rd <- rsDriver(browser = "firefox", port = 2855L)
 ffd <- rd$client
 
 # creamos la funcion
@@ -99,7 +99,7 @@ leer_fb <- function (x){
       autor_fb = html_nodes(fb, ".UFICommentActorName") %>% html_attr("href"),
       post_char = html_nodes(fb, "._30o4") %>% as.character(),
       post = html_nodes(fb, "div._30o4") %>% html_text(),
-      post_img = str_match(post_char, 'data-ploi="(.*?)" class=') %>% .[,2] %>% str_remove_all("amp;"),
+      post_img = str_match(post_char, 'data-ploi="(.*?)" class=') %>% .[,2] %>% str_remove_all("amp;") %>% str_remove_all('" data-pl.*'),
       megustas = html_nodes(fb, "._2vq9.fsm.fwn.fcg") %>% html_text(),
       bajado = Sys.time(),
       nota = x
@@ -126,6 +126,15 @@ comentarios_fb_limpios <- comentarios_fb %>%
 
 # guardamos los comentarios normalizados
 saveRDS(comentarios_fb_limpios,"comentarios_fb_limpios.rds")
+
+# guardamos las imágenes y memes publicados en los comentarios
+
+imagenes_links <- comentarios_fb_limpios %>% filter(!is.na(post_img)) %>% select(post_img) %>% as_vector()
+
+for (i in imagenes_links) {
+  image_read(i) %>% 
+    image_write(path = paste0('./fotos_fb/',str_extract(i, "........$"),'.jpeg'))
+}
 
 # Fin -- Hay mucho por mejorar, se aceptan sugerencias 
 
