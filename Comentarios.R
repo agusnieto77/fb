@@ -8,6 +8,7 @@ require(dplyr)
 require(purrr)
 require(tibble)
 require(stringr)
+require(magick)
 
 #################---links---############
 
