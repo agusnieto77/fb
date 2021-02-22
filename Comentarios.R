@@ -31,7 +31,7 @@ link_parte_3 <- "%2F&locale=es_LA&numposts=100&sdk=joey&version=v2.5&width="
 links_coment_lc <- paste0(link_parte_1, links_comentarios_fb, link_parte_3)
 
 # Usamos RSelenium
-rd <- rsDriver(browser = "firefox", port = 2299L)
+rd <- rsDriver(browser = "firefox", port = 2288L)
 ffd <- rd$client
 
 # creamos la funcion
@@ -99,7 +99,7 @@ leer_fb <- function (x){
       autor_fb = html_nodes(fb, ".UFICommentActorName") %>% html_attr("href"),
       post_char = html_nodes(fb, "._30o4") %>% as.character(),
       post = html_nodes(fb, "div._30o4") %>% html_text(),
-      post_img = str_match(post_char, 'data-ploi="(.*?)" class=') %>% .[,2],
+      post_img = str_match(post_char, 'data-ploi="(.*?)" class=') %>% .[,2] %>% str_remove_all("amp;"),
       megustas = html_nodes(fb, "._2vq9.fsm.fwn.fcg") %>% html_text(),
       bajado = Sys.time(),
       nota = x
