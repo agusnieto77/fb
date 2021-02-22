@@ -31,7 +31,7 @@ link_parte_3 <- "%2F&locale=es_LA&numposts=100&sdk=joey&version=v2.5&width="
 links_coment_lc <- paste0(link_parte_1, links_comentarios_fb, link_parte_3)
 
 # Usamos RSelenium
-rd <- rsDriver(browser = "firefox", port = 2265L)
+rd <- rsDriver(browser = "firefox", port = 2299L)
 ffd <- rd$client
 
 # creamos la funcion
@@ -92,7 +92,6 @@ leer_fb <- function (x){
       }
     }
     fb <-  ffd$getPageSource()[[1]] %>% read_html()
-    list(
     tibble(
       fecha = html_nodes(fb, ".UFISutroCommentTimestamp.livetimestamp") %>% html_text(),
       utime = html_nodes(fb, ".UFISutroCommentTimestamp.livetimestamp") %>% html_attr("data-utime"),
@@ -100,13 +99,10 @@ leer_fb <- function (x){
       autor_fb = html_nodes(fb, ".UFICommentActorName") %>% html_attr("href"),
       post_char = html_nodes(fb, "._30o4") %>% as.character(),
       post = html_nodes(fb, "div._30o4") %>% html_text(),
+      post_img = str_match(post_char, 'data-ploi="(.*?)" class=') %>% .[,2],
       megustas = html_nodes(fb, "._2vq9.fsm.fwn.fcg") %>% html_text(),
       bajado = Sys.time(),
       nota = x
-    ),
-   tibble(
-      post_img = html_nodes(fb, "._46-i.img,.scaledImageFitWidth.img") %>% html_attr("src")
-    )
     )
   }, error = function(e){
     NULL
@@ -116,13 +112,6 @@ leer_fb <- function (x){
 # aplicamos la funcion
 comentarios_fb <- map_df(links_coment_lc, leer_fb)
 
-# separamos los links de las imágenes y arammos dos tibbles
-
-comentarios_fb %>% select(-10) %>% filter(!is.na(utime)) %>% saveRDS("base_comentarios.rds")
-
-comentarios_fb %>%  select(10) %>% filter(!is.na(post_img)) %>% saveRDS("base_imagenes.rds")
-
-
 # guardamos los comentarios
 saveRDS(comentarios_fb,"comentarios_fb.rds")
 
@@ -130,7 +119,7 @@ saveRDS(comentarios_fb,"comentarios_fb.rds")
 # limpiamos
 comentarios_fb_limpios <- comentarios_fb %>% 
   mutate(fecha_posixct = as.POSIXct(as.integer(utime), origin="1970-01-01")) %>% 
-  select(9,1:8) %>% 
+  select(11,1:10) %>% 
   mutate(megustas = case_when(str_detect(megustas, '· \\d{1,3} ·') ~ stringr::str_extract(megustas,'· \\d{1,3} ·'), TRUE ~ "0" )) %>% 
   mutate(megustas = case_when(str_detect(megustas, '\\d{1,3}') ~ stringr::str_extract(megustas,'\\d{1,3}'), TRUE ~ "0" )) %>% 
   mutate(megustas = as.integer(megustas))
