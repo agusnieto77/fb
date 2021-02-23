@@ -1,4 +1,4 @@
-############----Paquetes----################
+#################----Paquetes----############
 
 require(RSelenium)
 require(rvest)
@@ -10,15 +10,22 @@ require(tibble)
 require(stringr)
 require(magick)
 
-#################----links----###############
+#################-----links-----############
 
-vector_links <- readRDS('./data/LC_notas_covid_ciudad_2020.rds') %>%  select(link) %>% as_vector()
+vector_links <- c('https://ahoramardelplata.com.ar/hay-190-nuevos-contagiados-covid-19-la-cantidad-diaria-mas-baja-casi-dos-meses-n4219562',
+                  'https://ahoramardelplata.com.ar/que-hizo-y-quien-estuvo-el-cordobes-que-dio-positivo-coronavirus-mar-del-plata-n4209075',
+                  'https://ahoramardelplata.com.ar/los-movimientos-del-cordobes-mar-del-plata-quien-estuvo-y-que-hizo-n4209268',
+                  'https://ahoramardelplata.com.ar/el-principal-temor-del-joven-cordobes-infectado-coronavirus-n4209078')
+
+vector_links <- vector_links[grepl("covid|coronavirus", vector_links)]
+
+vector_links <- vector_links[str_detect(vector_links,"covid|coronavirus")]
 
 # preparar links
-links_comentarios_fb <- str_remove_all(vector_links,"https://www.lacapitalmdp.com/")
-link_parte_1 <- "https://www.facebook.com/v2.5/plugins/comments.php?app_id=551960851645342&channel=https%3A%2F%2Fstaticxx.facebook.com%2Fx%2Fconnect%2Fxd_arbiter%2F%3Fversion%3D46%23cb%3Df30998e135adef4%26domain%3Dwww.lacapitalmdp.com%26origin%3Dhttps%253A%252F%252Fwww.lacapitalmdp.com%252Ff171cd682eab44%26relation%3Dparent.parent&container_width=1203&height=100&href=https%3A%2F%2Fwww.lacapitalmdp.com%2F"
-link_parte_3 <- "&locale=es_LA&numposts=100&sdk=joey&version=v2.5&width="
-links_coment_lc <- paste0(link_parte_1, links_comentarios_fb, link_parte_3)
+links_comentarios_fb <- str_remove_all(vector_links,"https://ahoramardelplata.com.ar/")
+link_parte_1 <- "https://www.facebook.com/plugins/comments.php?app_id=1586547171566168&channel=https%3A%2F%2Fstaticxx.facebook.com%2Fx%2Fconnect%2Fxd_arbiter%2F%3Fversion%3D46%23cb%3Df35279df0ba849%26domain%3Dahoramardelplata.com.ar%26origin%3Dhttps%253A%252F%252Fahoramardelplata.com.ar%252Ff1b64e698ad228c%26relation%3Dparent.parent&color_scheme=light&container_width=0&height=100&href=https%3A%2F%2Fahoramardelplata.com.ar%2F"
+link_parte_3 <- "&locale=es_ES&numposts=100&sdk=joey&width=770"
+links_coment_ahmdp <- paste0(link_parte_1, links_comentarios_fb, link_parte_3)
 
 # Usamos RSelenium
 rd <- rsDriver(browser = "firefox", port = 4444L)
@@ -98,17 +105,17 @@ leer_fb <- function (x){
   }, error = function(e){
     NULL
   })
-} 
+}  
 
 # aplicamos la funcion
-comentarios_fb <- map_df(links_coment_lc, leer_fb)
+comentarios_fb_ahora <- map_df(links_coment_ahmdp, leer_fb)
 
 # guardamos los comentarios
-saveRDS(comentarios_fb,"./data/comentarios_fb.rds")
+saveRDS(comentarios_fb_ahora,"./data/comentarios_fb_ahora.rds")
 
 ############### limpiamos y normalizamos los datos
 # limpiamos
-comentarios_fb_limpios <- comentarios_fb %>% 
+comentarios_fb_limpios_ahmdp <- comentarios_fb_ahora %>% 
   mutate(fecha_posixct = as.POSIXct(as.integer(utime), origin="1970-01-01")) %>% 
   select(11,1:10) %>% 
   mutate(megustas = case_when(str_detect(megustas, '· \\d{1,3} ·') ~ stringr::str_extract(megustas,'· \\d{1,3} ·'), TRUE ~ "0" )) %>% 
@@ -117,11 +124,11 @@ comentarios_fb_limpios <- comentarios_fb %>%
   mutate(id_img = str_extract(post_img, '....................\\.jpg'))
 
 # guardamos los comentarios normalizados
-saveRDS(comentarios_fb_limpios,"./data/comentarios_fb_limpios.rds")
+saveRDS(comentarios_fb_limpios_ahmdp,"./data/comentarios_fb_limpios_ahmdp.rds")
 
 # guardamos las imágenes y memes publicados en los comentarios
 
-imagenes_links <- comentarios_fb_limpios %>% filter(!is.na(post_img)) %>% select(post_img) %>% as_vector()
+imagenes_links <- comentarios_fb_limpios_ahmdp %>% filter(!is.na(post_img)) %>% select(post_img) %>% as_vector()
 
 for (i in imagenes_links) {
   image_read(i) %>% 
@@ -129,4 +136,3 @@ for (i in imagenes_links) {
 }
 
 # Fin -- Hay mucho por mejorar, se aceptan sugerencias 
-
