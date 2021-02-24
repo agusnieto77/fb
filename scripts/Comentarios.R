@@ -12,7 +12,7 @@ require(magick)
 
 #################----links----###############
 
-vector_links <- readRDS('./data/LC_notas_covid_ciudad_2020.rds') %>%  select(link) %>% as_vector()
+vector_links <- readRDS('./data/LC_notas_covid_ciudad_2020.rds') %>% distinct(link, .keep_all = TRUE) %>%  select(link) %>% as_vector() 
 
 # preparar links
 links_comentarios_fb <- str_remove_all(vector_links,"https://www.lacapitalmdp.com/")
